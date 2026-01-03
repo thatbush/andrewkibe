@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/client'
 import { Button } from '@/components/ui/button'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ArrowUpCircle } from 'lucide-react'
 import {
     Table,
     TableBody,
@@ -94,6 +94,23 @@ export default function LivestreamsPage() {
         return <div>Loading...</div>
     }
 
+    const generateSlugs = () => {
+        fetch('/api/admin/generate-slugs', {
+            method: 'POST',
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data.success) {
+                    toast.success(data.message)
+                } else {
+                    toast.error(data.error)
+                }
+            })
+            .catch((error) => {
+                toast.error(error.message)
+            })
+    }
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -103,6 +120,10 @@ export default function LivestreamsPage() {
                         Manage your livestreams and video content
                     </p>
                 </div>
+                <Button onClick={generateSlugs}>
+                    <ArrowUpCircle className="mr-2 h-4 w-4" />
+                    Revalidate
+                </Button>
                 <Button onClick={handleAdd}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Livestream

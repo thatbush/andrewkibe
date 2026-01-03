@@ -1,4 +1,4 @@
-// components/Hero.tsx
+// components/Hero.tsx - UPDATED VERSION
 'use client';
 
 import { Stream } from '@cloudflare/stream-react';
@@ -10,6 +10,7 @@ import { Database } from '@/types/database.types';
 import { Skeleton } from './ui/skeleton';
 import { formatDistanceToNow } from 'date-fns';
 import { LightRays } from './ui/light-rays';
+import { generateLivestreamSlug } from '@/lib/utils/slug'; // IMPORT THIS
 
 type Livestream = Database['public']['Tables']['livestreams']['Row'];
 
@@ -50,6 +51,11 @@ export function HeroSection({ currentLive, latestReplay, isLoading }: HeroSectio
     const videoTitle = displayStream?.title || 'Real Raw & Rare S2E08 ft. Andrew Kibe';
     const thumbnailUrl = displayStream?.thumbnail_url ||
         `https://customer-ugc6itgsiz8sxxq1.cloudflarestream.com/${videoId}/thumbnails/thumbnail.jpg`;
+
+    // GENERATE SLUGS FOR ROUTING - THIS IS THE KEY CHANGE
+    const liveSlug = currentLive ? generateLivestreamSlug(currentLive.title, currentLive.id) : null;
+    const replaySlug = latestReplay ? generateLivestreamSlug(latestReplay.title, latestReplay.id) : null;
+    const displaySlug = isLive ? liveSlug : replaySlug;
 
     return (
         <section className="relative bg-background py-12 lg:py-16">
@@ -136,7 +142,8 @@ export function HeroSection({ currentLive, latestReplay, isLoading }: HeroSectio
                             asChild
                             className={`${isLive ? 'bg-brand-red hover:bg-brand-red-muted animate-pulse' : 'bg-brand-red hover:bg-brand-red-muted'}`}
                         >
-                            <Link href={isLive && currentLive ? `/live/${currentLive.id}` : showReplay && latestReplay ? `/live/${latestReplay.id}` : '/live'}>
+                            {/* UPDATED LINK - USES SLUG INSTEAD OF ID */}
+                            <Link href={displaySlug ? `/live/${displaySlug}` : '/live'}>
                                 <Video className="mr-2 h-5 w-5" />
                                 {isLive ? 'JOIN LIVE NOW' : showReplay ? 'WATCH EPISODE' : 'WATCH LIVE'}
                             </Link>

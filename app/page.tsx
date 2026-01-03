@@ -43,7 +43,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <SiteHeader />
       <HeroSection currentLive={currentLive} latestReplay={latestReplay} />
       <FeaturedContent
         items={featuredContent || []}
@@ -62,7 +61,6 @@ export default function Home() {
         isLoading={livestreamsLoading}
       />
       <NewsletterCTA />
-      <SiteFooter />
     </div>
   )
 }
