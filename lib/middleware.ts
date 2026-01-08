@@ -7,6 +7,10 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  // Add pathname to headers for layout access
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
+
   // Define public routes that don't require authentication
   const publicRoutes = [
     '/',
@@ -45,7 +49,9 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
-            request,
+            request: {
+              headers: requestHeaders, // Include the pathname header
+            },
           })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
@@ -82,7 +88,12 @@ export async function middleware(request: NextRequest) {
 
   // If it's a public route, allow access without auth check
   if (isPublicRoute) {
-    return supabaseResponse
+    // Return response with pathname header
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    })
   }
 
   // For other protected routes, check auth
@@ -101,14 +112,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     * - api folder
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*|)',
   ],
 }

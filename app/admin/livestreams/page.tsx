@@ -120,10 +120,6 @@ export default function LivestreamsPage() {
                         Manage your livestreams and video content
                     </p>
                 </div>
-                <Button onClick={generateSlugs}>
-                    <ArrowUpCircle className="mr-2 h-4 w-4" />
-                    Revalidate
-                </Button>
                 <Button onClick={handleAdd}>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Livestream

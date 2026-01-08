@@ -4,8 +4,7 @@ import "./globals.css";
 import { createClient } from '@/lib/client'
 import { AuthProvider } from '@/lib/auth-context'
 import { Providers } from "./providers";
-import { SiteHeader } from "@/components/Header";
-import { SiteFooter } from "@/components/Footer";
+import { LayoutWrapper } from "@/app/wrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -107,9 +106,9 @@ export default async function RootLayout({
       >
         <AuthProvider initialUser={user}>
           <Providers>
-            <SiteHeader />
-            {children}
-            <SiteFooter />
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
           </Providers>
         </AuthProvider>
       </body>

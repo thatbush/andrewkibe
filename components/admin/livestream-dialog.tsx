@@ -1,38 +1,21 @@
 // components/admin/livestream-dialog.tsx
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/client'
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog'
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
-} from '@/components/ui/form'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
 import { toast } from 'sonner'
 import { Database } from '@/types/database.types'
+import { uploadLargeFile } from '@/lib/api/upload'
 
 type Livestream = Database['public']['Tables']['livestreams']['Row']
 type LivestreamInsert = Database['public']['Tables']['livestreams']['Insert']
@@ -44,6 +27,8 @@ interface LivestreamDialogProps {
 }
 
 export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamDialogProps) {
+    const [uploadProgress, setUploadProgress] = useState(0)
+    const [isUploading, setIsUploading] = useState(false)
     const queryClient = useQueryClient()
     const supabase = createClient()
 
@@ -78,6 +63,33 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
         }
     }, [livestream, form])
 
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file) return
+
+        setIsUploading(true)
+        setUploadProgress(0)
+
+        try {
+            const result = await uploadLargeFile(file, (progress) => {
+                setUploadProgress(progress)
+            })
+
+            if (result.success) {
+                form.setValue('cloudflare_video_id', result.videoId)
+                form.setValue('thumbnail_url', result.thumbnailUrl)
+                toast.success('Video uploaded successfully!')
+            } else {
+                throw new Error('Upload failed')
+            }
+        } catch (error: any) {
+            toast.error(`Upload failed: ${error.message}`)
+        } finally {
+            setIsUploading(false)
+            setUploadProgress(0)
+        }
+    }
+
     const mutation = useMutation({
         mutationFn: async (data: LivestreamInsert) => {
             if (livestream) {
@@ -85,13 +97,9 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
                     .from('livestreams')
                     .update(data)
                     .eq('id', livestream.id)
-
                 if (error) throw error
             } else {
-                const { error } = await supabase
-                    .from('livestreams')
-                    .insert(data)
-
+                const { error } = await supabase.from('livestreams').insert(data)
                 if (error) throw error
             }
         },
@@ -149,6 +157,27 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
                             )}
                         />
 
+                        {/* Video Upload Section */}
+                        <FormItem>
+                            <FormLabel>Upload Video</FormLabel>
+                            <FormControl>
+                                <Input
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={handleFileUpload}
+                                    disabled={isUploading}
+                                />
+                            </FormControl>
+                            {isUploading && (
+                                <div className="space-y-2">
+                                    <Progress value={uploadProgress} />
+                                    <p className="text-sm text-muted-foreground">
+                                        Uploading: {uploadProgress}%
+                                    </p>
+                                </div>
+                            )}
+                        </FormItem>
+
                         <FormField
                             control={form.control}
                             name="cloudflare_video_id"
@@ -156,7 +185,7 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
                                 <FormItem>
                                     <FormLabel>Cloudflare Video ID</FormLabel>
                                     <FormControl>
-                                        <Input {...field} value={field.value || ''} placeholder="34939fd83dcd38f946324f03c1fba2d7" />
+                                        <Input {...field} value={field.value || ''} placeholder="Auto-filled after upload" readOnly />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -170,7 +199,7 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
                                 <FormItem>
                                     <FormLabel>Thumbnail URL</FormLabel>
                                     <FormControl>
-                                        <Input {...field} value={field.value || ''} />
+                                        <Input {...field} value={field.value || ''} placeholder="Auto-filled after upload" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -223,10 +252,7 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
                             render={({ field }) => (
                                 <FormItem className="flex items-center gap-2">
                                     <FormControl>
-                                        <Switch
-                                            checked={field.value || false}
-                                            onCheckedChange={field.onChange}
-                                        />
+                                        <Switch checked={field.value || false} onCheckedChange={field.onChange} />
                                     </FormControl>
                                     <FormLabel className="!mt-0">Premium Content</FormLabel>
                                 </FormItem>
@@ -234,14 +260,10 @@ export function LivestreamDialog({ open, onOpenChange, livestream }: LivestreamD
                         />
 
                         <div className="flex justify-end gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => onOpenChange(false)}
-                            >
+                            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={mutation.isPending}>
+                            <Button type="submit" disabled={mutation.isPending || isUploading}>
                                 {mutation.isPending ? 'Saving...' : 'Save'}
                             </Button>
                         </div>
