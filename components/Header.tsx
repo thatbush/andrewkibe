@@ -129,11 +129,10 @@ export function SiteHeader() {
                             </Link>
 
                             <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold">
-                                <Link href="/" className="text-foreground hover:text-brand-red transition-colors">HOME</Link>
+                                <Link href="/live" className="text-foreground hover:text-brand-red transition-colors">STREAMS</Link>
                                 <Link href="/audiobooks" className="text-foreground hover:text-brand-red transition-colors">AUDIOBOOKS</Link>
-                                <Link href="/merchandise" className="text-foreground hover:text-brand-red transition-colors">MERCHANDISE</Link>
-                                <Link href="/trainings" className="text-foreground hover:text-brand-red transition-colors">TRAININGS</Link>
-                                <Link href="/news" className="text-foreground hover:text-brand-red transition-colors">NEWS</Link>
+                                <Link href="https://store.andrewkibemedia.com" target="_blank" className="text-foreground hover:text-brand-red transition-colors">MERCHANDISE</Link>
+                                <Link href="https://store.andrewkibemedia.com/product/freedom-tour-2026-nairobi/" className="text-foreground hover:text-brand-red transition-colors">TOURS</Link>
                                 <Link href="/contact" className="text-foreground hover:text-brand-red transition-colors">CONTACT</Link>
                             </nav>
                         </div>

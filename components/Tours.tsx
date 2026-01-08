@@ -62,7 +62,7 @@ export function TourSection({ tourDates, isLoading }: TourSectionProps) {
                                         ) : date.status === 'selling-fast' ? (
                                             <Badge className="bg-chart-4">Selling Fast</Badge>
                                         ) : (
-                                            <Button size="sm" className="bg-brand-red hover:bg-brand-red-muted">
+                                            <Button size="sm" className="bg-brand-red hover:bg-brand-red-muted" onClick={() => window.open('https://store.andrewkibemedia.com/product/freedom-tour-2026-nairobi/', '_blank')}>
                                                 <Calendar className="mr-2 h-4 w-4" />
                                                 Book Now
                                             </Button>
@@ -76,7 +76,7 @@ export function TourSection({ tourDates, isLoading }: TourSectionProps) {
                             )}
                         </div>
 
-                        <Button size="lg" variant="outline" className="border-brand-red/40 hover:bg-brand-red/10">
+                        <Button size="lg" variant="outline" className="border-brand-red/40 hover:bg-brand-red/10" onClick={() => window.open('https://store.andrewkibemedia.com/product/freedom-tour-2026-nairobi/', '_blank')}>
                             View Full Tour Schedule
                         </Button>
                     </div>
